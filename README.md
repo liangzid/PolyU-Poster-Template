@@ -11,9 +11,7 @@ Examples
 
 <img src="images/screenshot_20250523_105122.png" width="200" />
 
-<img src="images/screenshot_20250523_105211.png" width="200" />
-
-
+<img src="images/screenshot_20250523_161851.png" width="200" />
 
 
 
