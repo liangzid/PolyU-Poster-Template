@@ -7,14 +7,11 @@ You can use it via
 \usetheme{PolyU}
 ```
 
-Caption:
+Examples
 
+<img src="images/screenshot_20250523_105122.png" width="200" />
 
-[file:./images/screenshot_20250523_105122.png]
-
-
-
-[file:./images/screenshot_20250523_105211.png]
+<img src="images/screenshot_20250523_105211.png" width="200" />
 
 
 
