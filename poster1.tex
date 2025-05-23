@@ -1,0 +1,298 @@
+\documentclass[final,hyperref={pdfpagelabels=false}]{beamer}
+
+\usepackage[orientation=landscape,size=a0,scale=1.3]{beamerposter} % Use the beamerposter package for laying out the poster with a portrait orientation and an a0 paper size
+
+\usetheme{PolyU}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage{blindtext}
+\usepackage{amsmath,amsthm,amssymb,latexsym} % For including math equations, theorems, symbols, etc
+\usepackage[document]{ragged2e}
+\usepackage{times}\usefonttheme{professionalfonts}  % Uncomment to use Times as the main font
+\usefonttheme[onlymath]{serif} % Uncomment to use a Serif font within math environments
+%\boldmath % Use bold for everything within the math environment
+\usepackage{booktabs} % Top and bottom rules for tables
+\usepackage{microtype}
+
+\usecaptiontemplate{\small\structure{\insertcaptionname~\insertcaptionnumber: }\insertcaption} % A fix for figure numbering
+
+\newcommand{\shrink}{-15pt}
+
+\def\imagetop#1{\vtop{\null\hbox{#1}}}
+
+\let\oldbibliography\thebibliography
+\renewcommand{\thebibliography}[1]{\oldbibliography{#1}
+\setlength{\itemsep}{-10pt}}
+
+%----------------------------------------------------------------------------------------
+%   TITLE SECTION 
+%----------------------------------------------------------------------------------------
+
+\title{Does \textcolor{yellow}{Lo}w \textcolor{yellow}{R}ank \textcolor{yellow}{A}daptation Lead to \textcolor{yellow}{Lo}wer \textcolor{yellow}{R}obustness\\
+  against Training-Time \textcolor{yellow}{A}ttacks?}
+
+\author{
+  Zi Liang, Haibo Hu$^{*}$, Qingqing Ye,
+  Yaxin Xiao, Ronghua Li
+\\
+  The Hong Kong Polytechnic University, Hong Kong, China\\
+  \texttt{\{zi1415926.liang,20034165r,22041986r\}@connect.polyu.hk}\\
+  \texttt{\{haibo.hu,qqing.ye\}@polyu.edu.hk}\\
+}
+
+%----------------------------------------------------------------------------------------
+
+
+\begin{document}
+
+% \addtobeamertemplate{block end}{}{\vspace*{2ex}} % White space under blocks
+
+\begin{frame}[t] % The whole poster is enclosed in one beamer frame
+
+\begin{columns}[t] % The whole poster consists of three major columns, each of which can be subdivided further with another \begin{columns} block - the [t] argument aligns each column's content to the top
+
+  % \begin{column}{.02\textwidth}
+  % \end{column}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Column 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  \begin{column}{.34\textwidth} % 1st column
+
+    % \vspace{\shrink}          
+    \begin{block}{Overview}
+      \begin{itemize}
+      \item First theoretical analysis of LoRA's security vulnerabilities during fine-tuning
+      \item Examines robustness against data poisoning and backdoor attacks
+      \item Uses Neural Tangent Kernel and Information Geometry for analysis
+      \end{itemize}
+    \end{block}
+
+    \begin{block}{Summary of Findings}
+      \begin{itemize}
+\item \textbf{LoRA is more vulnerable than full fine-tuning to untargeted
+  poisoning attacks but demonstrates greater robustness against
+  backdoor attacks}.
+\item In addition to the trade-off between performance and
+  computational cost, \textbf{LoRA’s rank also influences the trade-off
+  between untargeted poisoning and backdoor attacks}.
+\item Besides of the rank, the \textbf{initialization variance} of the $A$ matrix in LoRA
+  significantly impacts training-time robustness.
+\item To improve robustness against backdoor attacks, the rank should
+  be set \textbf{as low as possible}, provided that performance requirements
+  are met.
+\item A \textbf{small} scale of initialization variance is recommended to
+  enhance training-time robustness.
+      \end{itemize}
+    \end{block}
+
+    \begin{block}{Preliminary}
+$\bullet~$Low Rank Adaptation (LoRA) introduces a mechanism to reduce the number of trainable
+parameters by freezing the original matrix $W^{(l)}$ and learn a
+low-rank update $\Delta W^{(l)}$. This update is factorized as the product of two low-rank submatrices,
+\begin{equation}
+\label{eq:lora}
+\begin{aligned}
+&W^{(l)}'=W^{(l)}+\Delta W^{(l)}\\
+&\Delta W^{(l)}=B^{(l)}A^{(l)},\\
+\end{aligned}
+\end{equation}
+where $A^{(l)}\in \mathbb{R}^{r\times n_{l}}$ and
+$B^{(l)}\in\mathbb{R}^{n_{l+1}\times r}$ are learnable matrices, and
+$r\ll \min\{n_{l},n_{l+1}\}$.
+
+$\bullet$~Neural Tangent Kernel (NTK) is a special kernel function, which is
+defined as the inner product of gradients:
+\begin{equation}
+\label{eq:ntk}
+K_{ntk}(x,x')=\nabla_{\theta}F(x;\theta)^{T}\nabla_{\theta}F(x';\theta).
+\end{equation}
+As the width of the neural
+network approaches infinity, the NTK exhibits the following two key
+properties:\\
+\begin{itemize}
+\item The NTK converges to a
+  \textbf{deterministic} limiting kernel that depends only on three
+  factors: \emph{i)} the variance of the parameter initialization,
+  \emph{ii)} the neural network structure, and \emph{iii)} the selection of activation functions;
+\item NTK keeps \textbf{constant} through out each training step $t$.
+\end{itemize}
+
+$\bullet$~Introducing of Poisoning Attacks:
+\begin{itemize}
+\item Untargeted Poisoning Attacks (UPA): adversely reducing the
+performance of fine-tuned models;
+\item Backdoor Poisoning Attacks (BPA): to cause the model to
+  misclassify \textbf{only} when a particular trigger is present
+\end{itemize}
+    \end{block}
+  \end{column}
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Column 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  \begin{column}{.02\textwidth}\end{column} % Empty spacer column
+
+  \begin{column}{.24\textwidth} % 2nd column
+    % \vspace{\shrink}
+    \begin{block}{Modeling Objectives of Different Poisoning Attacks}
+$\bullet$~Untargeted Poisoning aims to maximize:
+\begin{equation}
+|{\nabla_{\theta}{\mathcal{L}(x_c,\theta)}^T\cdot\nabla_{\theta}{\mathcal{L}(x_u,\theta)}}|,
+\end{equation}
+i.e., as adversaries, we aim to align the optimization direction of
+the poisoned sample $x_u$ as closely as possible with that of the
+clean training objective, because we aim to maximally influence the
+model’s predictions while injecting only a small fraction of poisoned
+data.
+
+$\bullet$~Backdoor Poisoning aims to minimize:
+\begin{equation}
+|{\nabla_{\theta}{\mathcal{L}(x_c,\theta)}^T\cdot\nabla_{\theta}{\mathcal{L}(x_t,\theta)}}|,
+\end{equation}
+i.e., the adversary aims to ensure that the optimization process
+driven by $\nabla_{\theta}{\mathcal{L}(x_c,\theta)}$ and
+$\nabla_{\theta}{\mathcal{L}(x_t,\theta)}$ occur simultaneously and
+both significantly influence the training, which aligns with the
+target of BPA to maintain performance on most inputs while producing
+significantly altered predictions only when a specific trigger is
+present.
+    \end{block}
+
+\begin{theorem}[Relationship between NTK and Fisher]\label{th:fisher-k}
+  When the width of $F_{\Theta}$ approaches infinity, its Fisher information
+  $\mathcal{I}_{\Theta}$ under $\mathcal{\tilde{D}}$ is equal to its
+  weighted $\mathcal{M}'(\tilde{\mathcal{D}},\tilde{\mathcal{D}})$, i.e.,
+  \begin{equation}\label{eq:fisher}
+    \begin{aligned}
+ I_{\theta}&= \mathbb{E}_{x\sim \tilde{\mathcal{D}}} \left[\nabla_{\theta}\mathcal{L}(x,\theta)^{T}\nabla_{\theta}\mathcal{L}(x,\theta)\right]\\
+    &=\mathbb{E}_{\tilde{x}_{c}\in \tilde{\mathcal{D}}}\left[\nabla_{F_{\theta}}\mathcal{L}(x,\theta)^{T}K_{ntk}(x,x)\nabla_{F_{\theta}}\mathcal{L}(x,\theta)\right].
+    \end{aligned}
+  \end{equation}
+\end{theorem}
+
+\begin{block}{Metrics to Measure the LoRA's Resilience}
+Let $\lambda_{1},\lambda_{2},...,\lambda_{n_{L}}$ denote the $n_{L}$
+eigenvalues of the Fisher information matrix $\mathcal{I}_{\Theta}$.
+Then we can quantify the \emph{information bits} (IB) of the
+model as
+\begin{equation}
+\label{eq:ib}
+\mathbf{IB}=\frac{1}{2}\log \det_{\text{pseudo}}\mathcal{I}_{\Theta}=\frac{1}{2}\sum_{\lambda_{i}>0}^{n_{L}}{\lambda_{i}}.
+\end{equation}
+
+We can measure the curvature of the fine-tuning manifold with
+\emph{R\'{e}nyi entropy}
+\begin{equation}
+\label{eq:renyi}
+H_{\alpha}=\frac{1}{1-\alpha}\log \left(\sum_{i=1}^{n_{L}}\lambda_{i}^{\alpha}\right),
+\end{equation}
+where $\alpha \geq 0$ controls the norm formation on the
+$\mathcal{I}_{\Theta}$. Specifically, $H_{1}$ corresponds to the
+Shannon entropy, while $H_{\infty}=\max\{\lambda_{1},\lambda_{2},...,\lambda_{n_{L}}\}$.
+
+Intuitively, a higher $\mathbf{IB}$ and $H_{\alpha}$ indicates a more complex
+fine-tuning manifold of the model, which implicitly demonstrates a
+higher function fitting ability.
+\end{block}
+
+\end{column} % End of the 2nd column
+
+  \begin{column}{.02\textwidth}\end{column} % Empty spacer column
+
+  \begin{column}{.34\textwidth} % 3nd column
+    % \vspace{\shrink}
+
+\begin{block}{An $L$-layer ANN's NTK}
+The NTK of FF can be represented by
+\begin{equation}
+\label{eq:ffntk}
+\begin{aligned}
+&K_{\text{ff}}^{(1,k)}(x,x')=I_{n_{l}}\otimes \Sigma^{(1)}(x,x')=x^{T}\cdot x',\\
+&K_{\text{ff}}^{(l,k)}(x,x')=K_{\text{ff}}^{(l-1,k)}(x,x')\dot{\Sigma}^{(l)}(x,x')+ \Sigma^{(l)}(x,x'),\\
+\end{aligned}
+\end{equation}
+where $k=\{0,1,...,n_{l}-1\}$, $\otimes$ denotes the Kronecker product, and
+\begin{equation}\small
+\begin{aligned}
+\label{eq:cov-ff}
+&\Sigma^{1}(X, X') = X^{T} X', \\
+&\Sigma^{l}(X, X') = \mathbb{E}_{f \sim \mathcal{N}(0, \Sigma^{l-1})}[\sigma(f(X))^{T} \sigma(f(X'))]= \sum_{j=1}^{n_{l-1}} \sigma(y_{j}^{(l-1)}(X))^{T} \sigma(y_{j}^{(l-1)}(X')).
+\end{aligned}
+\end{equation}
+    \end{block}
+
+\begin{lemma}[NTK of LoRA]\label{lemma:ntk-lora}
+The neural tangent kernel of an $l$-layer ANN trained with
+LoRA can be expressed as follows.
+\begin{equation}\small
+\label{eq:kntk}
+\begin{aligned}
+&K_{\text{LoRA}}^{(1,k)}(x,x')=K_{\text{ff}}^{(1,k)}\\
+&K_{\text{LoRA}}^{(l,k)}(x,x')=K_{\text{LoRA}}^{(l-1,k)}(x,x') \dot{\Sigma}^{(l)}+\Sigma_{\text{LoRA}}^{(l)}(x,x'),
+\end{aligned}
+\end{equation}
+where
+\begin{equation*}
+\label{eq:cov-ntk}
+\begin{aligned}
+&\Sigma^{(l)}_{\text{LoRA}}(x,x')=\sigma(y^{(l-1)}(x))^{T}A^{(l)~T}A^{(l)}\sigma(y^{(l-1)}(x')),
+\end{aligned}
+\end{equation*}
+and
+$W_{\text{LoRA}}^{(l)}=W_{0}^{(l)}+B^{(l)}A^{(l)}$ denotes the $l$-th
+layer's weight matrix of LoRA.
+\end{lemma}
+
+
+\begin{theorem}[NTK Relationship between FF and LoRA]
+\label{th:rel}
+  For an $l$-layer ANN with infinite width, the NTK functions of FF
+  and LoRA at the $l$-th layer are related by the following expression:
+\begin{equation}
+\label{eq:rel}
+K_{\text{LoRA}}^{(l,k)}=K_{\text{ff}}^{(l,k)}+\Delta_{r}^{(l)},
+\end{equation}
+where
+\begin{equation*}
+  \begin{aligned}
+\Delta_{r}^{(l)}&= [ \mathbf{\sigma} ( y^{(l-1)}(x) )
+]^{T}(A^{(l)~T}A^{(l)}-I_{n_{l-1}\times n_{l-1}}) [ \mathbf{\sigma} ( y^{(l-1)}(x') ) ].
+  \end{aligned}
+\end{equation*}
+\end{theorem}
+
+\begin{theorem}[$M_{\Delta}^{(l)}$'s Negative Semi-Definiteness]
+  \label{th:delta-nsd}
+  When the LoRA submatrix $A^{(l)}\in\mathbb{R}^{r\times n_{l-1}}$ is initialized with
+  variance $\sigma_{a}^{2}$, $\sigma_{a}^{2}<1/n_{l-1}$, and
+  $r\leq n_{l-1}$, then $M_{\Delta}^{(l)}$ is
+  a \textbf{negative semi-definite} matrix, with $r$ eigenvalues
+  equal to $\sigma_{a}^{2}\cdot n_{l-1}$ and $n_{l}-r$ eigenvalues
+  equal to $0$.
+\end{theorem}
+
+\begin{corollary}[Ideal Full Rank Adaptation]\label{th:full-rank}
+When $n_{l-1}\rightarrow \infty$, the kernel matrix $M_{\Delta}^{(l)}$
+strictly converges to
+$\mathbf{0}$, i.e., $K_{\text{LoRA}}^{(l)}(x,x)\equiv
+K_{\text{ff}}^{(l)}(x,x)$ if $r=n_{l-1}$ and the initialization variance
+satisfies $\sigma^{2}_{a}=1/n_{l-1}$.
+\end{corollary}
+
+\begin{theorem}[$\mathbf{IB}_{\text{ff}}\geq\mathbf{IB}_{\text{LoRA}}$
+  \& $H_{\alpha \text{ff}}\geq H_{\alpha \text{LoRA}}$]\label{th:ib-leq}
+  The information bits and the R\'enyi entropy of LoRA are always \textbf{smaller} than those of FF if $M^{(l)}_{\Delta}$ is a negative
+  semi-definite matrix, i.e., $r\leq n_{l-1}$ and $\sigma^{2}\leq 1/n_{l-1}$.
+\end{theorem}
+
+    
+
+\end{column} % End of the 3rd column
+
+
+\end{columns} % End of all the columns in the poster
+\end{frame} % End of the enclosing frame
+\end{document}
